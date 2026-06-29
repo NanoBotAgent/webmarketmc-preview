@@ -10,7 +10,7 @@ const ICONS = {
     ARROW_FLAT: `<svg class="icon icon-sm" style="stroke-width:3;color:var(--text-muted)" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>`
 };
 
-const IMG_BASE = 'https://api.minecraftitems.xyz/api/item/';
+const IMG_BASE = 'https://assets.mcasset.cloud/26.2/assets/minecraft/textures/item/';
 
 // ── Fake Data ──────────────────────────────────────────────────
 
@@ -457,9 +457,12 @@ function renderStocks(stocks) {
 function handleItemIconError(img, material, hideOnFail = false) {
     let attempt = parseInt(img.dataset.fallback || '0');
     if (attempt < 1) {
-        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/item/${material.toLowerCase()}.png`;
+        img.src = `https://assets.mcasset.cloud/26.2/assets/minecraft/textures/block/${material.toLowerCase()}.png`;
         img.dataset.fallback = attempt + 1;
     } else if (attempt < 2) {
+        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/item/${material.toLowerCase()}.png`;
+        img.dataset.fallback = attempt + 1;
+    } else if (attempt < 3) {
         img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/block/${material.toLowerCase()}.png`;
         img.dataset.fallback = attempt + 1;
     } else {
