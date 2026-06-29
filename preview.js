@@ -331,6 +331,9 @@ function openAuctionModal(id, isBin, name, material, price, currencyStr, amount)
     const qtySelector = document.getElementById('auction-quantity-selector');
     qtySelector.style.display = maxQty > 1 ? '' : 'none';
 
+    // Update label: BIN shows "Price", BID shows "Your Bid"
+    document.getElementById('auction-amount-label').textContent = isBin ? 'Price (per item)' : 'Your Bid (per item)';
+
     // Bid input
     const input = document.getElementById('auction-amount-input');
     if (isBin) {
