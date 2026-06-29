@@ -149,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
     renderCategories(FAKE_CATEGORIES);
     selectCategory('building', 'Building Blocks');
+    initCustomSelects();
 });
 
 function setupNavigation() {
@@ -593,3 +594,73 @@ document.getElementById('buy-modal')?.addEventListener('click', (e) => {
 document.getElementById('auction-modal')?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeModal('auction-modal');
 });
+
+// ── Custom Select Dropdown ──────────────────────────────────────
+let currentStocksSort = 'name';
+
+function initCustomSelects() {
+    document.querySelectorAll('.custom-select').forEach(sel => {
+        const trigger = sel.querySelector('.custom-select-trigger');
+        const options = sel.querySelector('.custom-select-options');
+        const valueSpan = sel.querySelector('.custom-select-value');
+        if (!trigger || !options) return;
+
+        // Toggle open/close
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+            closeAllCustomSelects();
+            if (!isOpen) {
+                trigger.setAttribute('aria-expanded', 'true');
+                options.classList.add('open');
+            }
+        });
+
+        // Option click
+        options.querySelectorAll('li').forEach(li => {
+            li.addEventListener('click', () => {
+                const val = li.getAttribute('data-value');
+                const text = li.textContent;
+                valueSpan.textContent = text;
+                options.querySelectorAll('li').forEach(l => l.classList.remove('selected'));
+                li.classList.add('selected');
+                trigger.setAttribute('aria-expanded', 'false');
+                options.classList.remove('open');
+
+                // Apply sort
+                currentStocksSort = val;
+                applyStocksSort();
+            });
+        });
+    });
+
+    // Close on outside click
+    document.addEventListener('click', closeAllCustomSelects);
+}
+
+function closeAllCustomSelects() {
+    document.querySelectorAll('.custom-select-trigger[aria-expanded="true"]').forEach(t => {
+        t.setAttribute('aria-expanded', 'false');
+        t.nextElementSibling?.classList.remove('open');
+    });
+}
+
+function applyStocksSort() {
+    let stocks = [...FAKE_STOCKS];
+    switch (currentStocksSort) {
+        case 'name':
+            stocks.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+        case 'buyPrice':
+            stocks.sort((a, b) => (b.buyPrice || 0) - (a.buyPrice || 0));
+            break;
+        case 'sellPrice':
+            stocks.sort((a, b) => (b.sellPrice || 0) - (a.sellPrice || 0));
+            break;
+        case 'change':
+            stocks.sort((a, b) => (b.change || 0) - (a.change || 0));
+            break;
+    }
+    renderStocks(stocks);
+}
+
