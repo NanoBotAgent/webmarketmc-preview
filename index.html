@@ -300,12 +300,33 @@
                         <div class="modal-item-price" id="auction-modal-item-price">Current: $500.00</div>
                     </div>
                 </div>
-                <div class="amount-selector" id="auction-amount-selector">
-                    <label>Your Bid</label>
+                <div class="amount-selector" id="auction-quantity-selector">
+                    <label>Quantity</label>
+                    <div class="amount-controls">
+                        <button class="amount-btn" id="auction-qty-minus">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24">
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                        </button>
+                        <input type="number" id="auction-qty-input" value="1" min="1" max="64">
+                        <button class="amount-btn" id="auction-qty-plus">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="amount-selector" id="auction-bid-selector">
+                    <label>Your Bid (per item)</label>
                     <div class="amount-controls" style="flex:1;">
                         <input type="number" id="auction-amount-input" step="0.1"
                             style="width:100%; text-align:left; padding-left:12px;" placeholder="Enter amount...">
                     </div>
+                </div>
+                <div class="modal-total">
+                    <span>Total:</span>
+                    <span class="total-price" id="auction-modal-total">$0.00</span>
                 </div>
             </div>
             <div class="modal-footer">
