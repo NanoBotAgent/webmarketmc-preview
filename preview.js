@@ -581,6 +581,33 @@ function renderAuctionCategories(cats) {
     const container = document.getElementById('auction-sidebar-categories');
     if (!container) return;
     container.innerHTML = '';
+
+    // Special auction-type filters
+    const specialFilters = [
+        { id: '__all', name: 'All Listings', count: FAKE_AUCTIONS.length },
+        { id: '__bin', name: 'BIN Listings', count: FAKE_AUCTIONS.filter(a => a.isBin).length },
+        { id: '__bid', name: 'BID Listings', count: FAKE_AUCTIONS.filter(a => !a.isBin).length },
+    ];
+
+    specialFilters.forEach(f => {
+        const el = document.createElement('div');
+        el.className = 'sidebar-item';
+        el.dataset.catId = f.id;
+        el.dataset.special = 'true';
+        el.innerHTML = `
+            <span style="font-weight:600;color:var(--text-primary)">${esc(f.name)}</span>
+            <span class="item-count">${f.count}</span>
+        `;
+        el.addEventListener('click', () => selectAuctionCategory(f.id, f.name));
+        container.appendChild(el);
+    });
+
+    // Separator
+    const sep = document.createElement('div');
+    sep.className = 'sidebar-separator';
+    container.appendChild(sep);
+
+    // Item categories
     cats.forEach(cat => {
         const el = document.createElement('div');
         el.className = 'sidebar-item';
@@ -602,9 +629,16 @@ function selectAuctionCategory(catId, catName) {
     document.querySelectorAll('#auction-sidebar-categories .sidebar-item').forEach(s => {
         s.classList.toggle('active', s.dataset.catId === catId);
     });
-    const filtered = currentAuctionCategory
-        ? FAKE_AUCTIONS.filter(a => a.categoryId === currentAuctionCategory || a.category === catName)
-        : FAKE_AUCTIONS;
+    let filtered;
+    if (catId === '__all') {
+        filtered = FAKE_AUCTIONS;
+    } else if (catId === '__bin') {
+        filtered = FAKE_AUCTIONS.filter(a => a.isBin);
+    } else if (catId === '__bid') {
+        filtered = FAKE_AUCTIONS.filter(a => !a.isBin);
+    } else {
+        filtered = FAKE_AUCTIONS.filter(a => a.categoryId === catId || a.category === catName);
+    }
     renderAuctions(filtered.length > 0 ? filtered : FAKE_AUCTIONS);
 }
 
@@ -613,7 +647,7 @@ function initAuctionSidebar() {
     if (FAKE_CATEGORIES && FAKE_CATEGORIES.length > 0) {
         renderAuctionCategories(FAKE_CATEGORIES);
         if (!currentAuctionCategory) {
-            selectAuctionCategory(FAKE_CATEGORIES[0].id, FAKE_CATEGORIES[0].name);
+            selectAuctionCategory('__all', 'All Listings');
         }
     }
 }
