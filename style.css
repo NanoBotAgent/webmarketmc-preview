@@ -259,8 +259,6 @@ header {
 
 .page-header-bar {
     padding: 24px 32px 16px;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
 .page-header-bar h2 {
@@ -349,7 +347,7 @@ header {
     flex: 1;
     margin-left: var(--sidebar-width);
     padding: 24px 32px;
-    max-width: 1200px;
+    max-width: none;
 }
 
 /* ── Market Search Bar ───────────────────────────────────────────── */
