@@ -167,7 +167,7 @@ function switchPage(page) {
 
     switch (page) {
         case 'market': break;
-        case 'auction': renderAuctions(FAKE_AUCTIONS); break;
+        case 'auction': initAuctionSidebar(); break;
         case 'orders': renderOrders(FAKE_ORDERS); break;
         case 'stocks': renderStocks(FAKE_STOCKS); break;
     }
@@ -575,8 +575,53 @@ document.getElementById('search-input')?.addEventListener('input', function() {
     }
 });
 
+let currentAuctionCategory = null;
+
+function renderAuctionCategories(cats) {
+    const container = document.getElementById('auction-sidebar-categories');
+    if (!container) return;
+    container.innerHTML = '';
+    cats.forEach(cat => {
+        const el = document.createElement('div');
+        el.className = 'sidebar-item';
+        el.dataset.catId = cat.id;
+        el.innerHTML = `
+            <img src="${IMG_BASE}${cat.icon?.toLowerCase() || 'stone'}" width="20" height="20"
+                 style="image-rendering:pixelated" onerror="this.style.display='none'">
+            <span>${esc(cat.name)}</span>
+            <span class="item-count">${cat.itemCount}</span>
+        `;
+        el.addEventListener('click', () => selectAuctionCategory(cat.id, cat.name));
+        container.appendChild(el);
+    });
+}
+
+function selectAuctionCategory(catId, catName) {
+    currentAuctionCategory = catId;
+    document.getElementById('auction-search').value = '';
+    document.querySelectorAll('#auction-sidebar-categories .sidebar-item').forEach(s => {
+        s.classList.toggle('active', s.dataset.catId === catId);
+    });
+    const filtered = currentAuctionCategory
+        ? FAKE_AUCTIONS.filter(a => a.categoryId === currentAuctionCategory || a.category === catName)
+        : FAKE_AUCTIONS;
+    renderAuctions(filtered.length > 0 ? filtered : FAKE_AUCTIONS);
+}
+
+// Initialize auction categories when switching to auction page
+function initAuctionSidebar() {
+    if (FAKE_CATEGORIES && FAKE_CATEGORIES.length > 0) {
+        renderAuctionCategories(FAKE_CATEGORIES);
+        if (!currentAuctionCategory) {
+            selectAuctionCategory(FAKE_CATEGORIES[0].id, FAKE_CATEGORIES[0].name);
+        }
+    }
+}
+
 document.getElementById('auction-search')?.addEventListener('input', function() {
     const q = this.value.toLowerCase();
+    currentAuctionCategory = null;
+    document.querySelectorAll('#auction-sidebar-categories .sidebar-item').forEach(s => s.classList.remove('active'));
     const filtered = FAKE_AUCTIONS.filter(a => a.itemName.toLowerCase().includes(q) || a.seller.toLowerCase().includes(q));
     renderAuctions(filtered);
 });
