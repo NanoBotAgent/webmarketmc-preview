@@ -289,15 +289,28 @@ document.getElementById('modal-buy')?.addEventListener('click', () => {
 
 // ── Auction Page ───────────────────────────────────────────────
 
-function renderAuctions(auctions) {
+function renderAuctions(auctions, categoryName) {
     const grid = document.getElementById('auction-grid');
     const empty = document.getElementById('auction-empty');
+    const emptyTitle = document.getElementById('auction-empty-title');
+    const emptySub = document.getElementById('auction-empty-sub');
     if (!auctions || auctions.length === 0) {
         grid.innerHTML = '';
+        if (categoryName) {
+            emptyTitle.textContent = `No auctions in ${categoryName}`;
+            emptySub.textContent = 'No items are currently listed in this category. Check back later!';
+        } else {
+            emptyTitle.textContent = 'No active auctions';
+            emptySub.textContent = 'Check back later or list items in-game.';
+        }
         empty.style.display = '';
+        empty.classList.remove('fade-in');
+        void empty.offsetWidth; // trigger reflow
+        empty.classList.add('fade-in');
         return;
     }
     empty.style.display = 'none';
+    empty.classList.remove('fade-in');
     grid.innerHTML = auctions.map(a => {
         const remaining = a.expiration - Date.now();
         const timeStr = remaining > 0 ? formatDuration(remaining) : 'Expired';
@@ -639,10 +652,8 @@ function selectAuctionCategory(catId, catName) {
     } else {
         filtered = FAKE_AUCTIONS.filter(a => a.categoryId === catId || a.category === catName);
     }
-    renderAuctions(filtered.length > 0 ? filtered : FAKE_AUCTIONS);
+    renderAuctions(filtered, catName);
 }
-
-// Initialize auction categories when switching to auction page
 function initAuctionSidebar() {
     if (FAKE_CATEGORIES && FAKE_CATEGORIES.length > 0) {
         renderAuctionCategories(FAKE_CATEGORIES);
@@ -657,7 +668,7 @@ document.getElementById('auction-search')?.addEventListener('input', function() 
     currentAuctionCategory = null;
     document.querySelectorAll('#auction-sidebar-categories .sidebar-item').forEach(s => s.classList.remove('active'));
     const filtered = FAKE_AUCTIONS.filter(a => a.itemName.toLowerCase().includes(q) || a.seller.toLowerCase().includes(q));
-    renderAuctions(filtered);
+    renderAuctions(filtered, null);
 });
 
 document.getElementById('stocks-search')?.addEventListener('input', function() {
