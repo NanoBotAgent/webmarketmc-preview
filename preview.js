@@ -84,6 +84,8 @@ const FAKE_AUCTIONS = [
     { id: 4, itemName: 'Shulker Box', material: 'shulker_box', amount: 2, seller: 'RedstoneRex', sellerUuid: 'fake4', isBin: false, price: 600, currencySymbol: '$', highestBidder: null, expiration: Date.now() + 240000 },
     { id: 5, itemName: 'Beacon', material: 'beacon', amount: 1, seller: 'RichSteve', sellerUuid: 'fake5', isBin: true, price: 12000, currencySymbol: '$', highestBidder: null, expiration: Date.now() + 14400000 },
     { id: 6, itemName: 'Enchanted Golden Apple', material: 'enchanted_golden_apple', amount: 1, seller: 'GappleGod', sellerUuid: 'fake6', isBin: false, price: 35000, currencySymbol: '$', highestBidder: 'WhalePlayer', expiration: Date.now() + 1800000 },
+    { id: 7, itemName: 'Diamond', material: 'diamond', amount: 64, seller: 'DiamondMiner', sellerUuid: 'fake7', isBin: true, price: 500, currencySymbol: '$', highestBidder: null, expiration: Date.now() + 5400000 },
+    { id: 8, itemName: 'Iron Ingot', material: 'iron_ingot', amount: 32, seller: 'IronFarm', sellerUuid: 'fake8', isBin: true, price: 50, currencySymbol: '$', highestBidder: null, expiration: Date.now() + 10800000 },
 ];
 
 const FAKE_ORDERS = [
@@ -110,6 +112,7 @@ const FAKE_STOCKS = [
 
 let currentPage = 'market';
 let currentCategory = 'building';
+let currentAuctionContext = null;
 
 // ── Navigation ─────────────────────────────────────────────────
 
@@ -240,7 +243,7 @@ document.getElementById('amount-plus')?.addEventListener('click', () => {
 });
 document.getElementById('amount-input')?.addEventListener('input', updateModalTotal);
 document.getElementById('modal-buy')?.addEventListener('click', () => {
-    showToast('success', 'Preview mode — purchases disabled');
+    showToast('success', 'Preview mode - purchases disabled');
     document.getElementById('buy-modal').style.display = 'none';
 });
 
@@ -275,7 +278,7 @@ function renderAuctions(auctions) {
             <div class="auction-details">
                 <div class="auction-detail-row">
                     <span class="auction-detail-label">${a.isBin ? 'Price' : 'Current Bid'}</span>
-                    <span class="auction-price-value">${a.currencySymbol}${a.price.toLocaleString()}</span>
+                    <span class="auction-price-value">${a.currencySymbol}${a.price.toLocaleString()}${a.amount > 1 ? ' / ea' : ''}</span>
                 </div>
                 ${a.highestBidder ? `
                 <div class="auction-detail-row">
@@ -288,7 +291,7 @@ function renderAuctions(auctions) {
             </div>
             <button class="btn-buy"
                 style="margin: 10px 15px 15px; width: calc(100% - 30px); font-size: 13px; padding: 10px;"
-                onclick="showToast('success', 'Preview mode — auctions disabled')">
+                onclick="openAuctionModal(${a.id}, ${a.isBin}, '${escJs(a.itemName)}', '${escJs(a.material || 'stone')}', ${a.price}, '${escJs(a.currencySymbol)}', ${a.amount})">
                 ${a.isBin ? 'Buy It Now' : 'Place Bid'}
             </button>
         </div>`;
@@ -306,6 +309,79 @@ function formatDuration(ms) {
     return `${s}s`;
 }
 
+// ── Auction Modal with Quantity ────────────────────────────────
+
+function openAuctionModal(id, isBin, name, material, price, currencyStr, amount) {
+    const maxQty = amount || 1;
+    currentAuctionContext = { id, isBin, price, currency: currencyStr, maxQty };
+
+    document.getElementById('auction-modal-title').textContent = isBin ? 'Buy It Now' : 'Place Bid';
+    document.getElementById('auction-modal-item-name').textContent = name;
+    document.getElementById('auction-modal-item-price').textContent = isBin
+        ? `Price: ${currencyStr}${price.toLocaleString()} each`
+        : `Current: ${currencyStr}${price.toLocaleString()} each`;
+
+    const iconEl = document.getElementById('auction-modal-icon');
+    iconEl.innerHTML = `<img src="${IMG_BASE}${escJs(material)}" onerror="handleItemIconError(this, '${escJs(material)}', true)">`;
+
+    // Quantity selector - show only if stack > 1
+    const qtyInput = document.getElementById('auction-qty-input');
+    qtyInput.value = 1;
+    qtyInput.max = maxQty;
+    const qtySelector = document.getElementById('auction-quantity-selector');
+    qtySelector.style.display = maxQty > 1 ? '' : 'none';
+
+    // Bid input
+    const input = document.getElementById('auction-amount-input');
+    if (isBin) {
+        input.value = price;
+        input.disabled = true;
+        document.getElementById('auction-modal-btn-text').textContent = 'Confirm Purchase';
+    } else {
+        input.value = price + 1;
+        input.min = price + 0.1;
+        input.disabled = false;
+        document.getElementById('auction-modal-btn-text').textContent = 'Confirm Bid';
+    }
+
+    updateAuctionTotal();
+    document.getElementById('auction-modal').style.display = 'flex';
+}
+
+function updateAuctionTotal() {
+    if (!currentAuctionContext) return;
+    const qty = parseInt(document.getElementById('auction-qty-input').value) || 1;
+    const bidPerItem = parseFloat(document.getElementById('auction-amount-input').value) || 0;
+    const total = qty * bidPerItem;
+    const totalEl = document.getElementById('auction-modal-total');
+    if (totalEl) totalEl.textContent = `${currentAuctionContext.currency}${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+}
+
+document.getElementById('auction-modal-close')?.addEventListener('click', () => {
+    document.getElementById('auction-modal').style.display = 'none';
+});
+document.getElementById('auction-modal-cancel')?.addEventListener('click', () => {
+    document.getElementById('auction-modal').style.display = 'none';
+});
+document.getElementById('auction-qty-minus')?.addEventListener('click', () => {
+    const inp = document.getElementById('auction-qty-input');
+    inp.value = Math.max(1, (parseInt(inp.value) || 1) - 1);
+    updateAuctionTotal();
+});
+document.getElementById('auction-qty-plus')?.addEventListener('click', () => {
+    if (!currentAuctionContext) return;
+    const inp = document.getElementById('auction-qty-input');
+    inp.value = Math.min(currentAuctionContext.maxQty, (parseInt(inp.value) || 1) + 1);
+    updateAuctionTotal();
+});
+document.getElementById('auction-qty-input')?.addEventListener('input', updateAuctionTotal);
+document.getElementById('auction-amount-input')?.addEventListener('input', updateAuctionTotal);
+
+document.getElementById('auction-modal-submit')?.addEventListener('click', () => {
+    showToast('success', 'Preview mode - auctions disabled');
+    document.getElementById('auction-modal').style.display = 'none';
+});
+
 // ── Orders Page ────────────────────────────────────────────────
 
 function renderOrders(orders) {
@@ -322,7 +398,6 @@ function renderOrders(orders) {
     body.innerHTML = orders.map(o => {
         const pct = o.amountRequested > 0 ? Math.round((o.amountFilled / o.amountRequested) * 100) : 0;
         const statusClass = o.status === 'ACTIVE' ? 'active' : o.status === 'FILLED' ? 'filled' : 'cancelled';
-        const remaining = o.amountRequested - o.amountFilled;
         return `
         <tr>
             <td>
@@ -362,7 +437,7 @@ function renderStocks(stocks) {
         const changeStr = s.change > 0 ? `+${s.change.toFixed(1)}%` : `${s.change.toFixed(1)}%`;
         const arrow = s.change > 0.5 ? ICONS.ARROW_UP : s.change < -0.5 ? ICONS.ARROW_DOWN : ICONS.ARROW_FLAT;
         return `
-        <tr onclick="showToast('success', 'Preview mode — charts disabled')">
+        <tr onclick="showToast('success', 'Preview mode - charts disabled')">
             <td>
                 <div class="stock-item-cell">
                     <img class="stock-item-icon" src="${IMG_BASE}${s.material?.toLowerCase() || 'stone'}"
@@ -370,8 +445,8 @@ function renderStocks(stocks) {
                     <span>${esc(s.name)}</span>
                 </div>
             </td>
-            <td style="color:var(--accent);font-weight:600">${s.buyPrice > 0 ? s.currencySymbol + s.buyPrice.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-            <td style="font-weight:500">${s.sellPrice > 0 ? s.currencySymbol + s.sellPrice.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+            <td style="color:var(--accent);font-weight:600">${s.buyPrice > 0 ? s.currencySymbol + s.buyPrice.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '--'}</td>
+            <td style="font-weight:500">${s.sellPrice > 0 ? s.currencySymbol + s.sellPrice.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '--'}</td>
             <td><span class="stock-change ${changeClass}">${arrow} ${changeStr}</span></td>
         </tr>`;
     }).join('');
