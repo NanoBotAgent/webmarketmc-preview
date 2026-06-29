@@ -1,0 +1,454 @@
+// ═══════════════════════════════════════════════════════════════
+// WebMarketMC — Static Preview with Fake Data
+// ═══════════════════════════════════════════════════════════════
+
+const ICONS = {
+    BOX: `<svg class="icon" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`,
+    CLOCK: `<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+    ARROW_UP: `<svg class="icon icon-sm" style="stroke-width:3;color:var(--accent)" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>`,
+    ARROW_DOWN: `<svg class="icon icon-sm" style="stroke-width:3;color:var(--red)" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`,
+    ARROW_FLAT: `<svg class="icon icon-sm" style="stroke-width:3;color:var(--text-muted)" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>`
+};
+
+const IMG_BASE = 'https://api.minecraftitems.xyz/api/item/';
+
+// ── Fake Data ──────────────────────────────────────────────────
+
+const FAKE_CATEGORIES = [
+    { id: 'building', name: 'Building Blocks', icon: 'stone', itemCount: 24 },
+    { id: 'ores', name: 'Ores & Minerals', icon: 'diamond', itemCount: 12 },
+    { id: 'food', name: 'Food & Farming', icon: 'golden_carrot', itemCount: 18 },
+    { id: 'tools', name: 'Tools & Weapons', icon: 'diamond_sword', itemCount: 9 },
+    { id: 'redstone', name: 'Redstone', icon: 'redstone', itemCount: 15 },
+    { id: 'misc', name: 'Miscellaneous', icon: 'nether_star', itemCount: 31 }
+];
+
+const FAKE_ITEMS = {
+    building: [
+        { key: 'stone', name: 'Stone', price: 2, priceFormatted: '2 Coins', currency: 'Coins', material: 'stone' },
+        { key: 'oak_planks', name: 'Oak Planks', price: 5, priceFormatted: '5 Coins', currency: 'Coins', material: 'oak_planks' },
+        { key: 'cobblestone', name: 'Cobblestone', price: 1, priceFormatted: '1 Coin', currency: 'Coins', material: 'cobblestone' },
+        { key: 'brick', name: 'Bricks', price: 12, priceFormatted: '12 Coins', currency: 'Coins', material: 'brick' },
+        { key: 'glass', name: 'Glass', price: 8, priceFormatted: '8 Coins', currency: 'Coins', material: 'glass' },
+        { key: 'quartz_block', name: 'Quartz Block', price: 45, priceFormatted: '45 Coins', currency: 'Coins', material: 'quartz_block' },
+        { key: 'prismarine', name: 'Prismarine', price: 30, priceFormatted: '30 Coins', currency: 'Coins', material: 'prismarine' },
+        { key: 'dark_oak_planks', name: 'Dark Oak Planks', price: 7, priceFormatted: '7 Coins', currency: 'Coins', material: 'dark_oak_planks' },
+        { key: 'sandstone', name: 'Sandstone', price: 4, priceFormatted: '4 Coins', currency: 'Coins', material: 'sandstone' },
+    ],
+    ores: [
+        { key: 'coal', name: 'Coal', price: 15, priceFormatted: '15 Coins', currency: 'Coins', material: 'coal' },
+        { key: 'iron_ingot', name: 'Iron Ingot', price: 50, priceFormatted: '50 Coins', currency: 'Coins', material: 'iron_ingot' },
+        { key: 'gold_ingot', name: 'Gold Ingot', price: 120, priceFormatted: '120 Coins', currency: 'Coins', material: 'gold_ingot' },
+        { key: 'diamond', name: 'Diamond', price: 500, priceFormatted: '500 Coins', currency: 'Coins', material: 'diamond' },
+        { key: 'emerald', name: 'Emerald', price: 450, priceFormatted: '450 Coins', currency: 'Coins', material: 'emerald' },
+        { key: 'lapis_lazuli', name: 'Lapis Lazuli', price: 35, priceFormatted: '35 Coins', currency: 'Coins', material: 'lapis_lazuli' },
+        { key: 'redstone', name: 'Redstone Dust', price: 25, priceFormatted: '25 Coins', currency: 'Coins', material: 'redstone' },
+        { key: 'nether_quartz', name: 'Nether Quartz', price: 20, priceFormatted: '20 Coins', currency: 'Coins', material: 'quartz' },
+    ],
+    food: [
+        { key: 'bread', name: 'Bread', price: 8, priceFormatted: '8 Coins', currency: 'Coins', material: 'bread' },
+        { key: 'golden_carrot', name: 'Golden Carrot', price: 200, priceFormatted: '200 Coins', currency: 'Coins', material: 'golden_carrot' },
+        { key: 'cooked_beef', name: 'Cooked Steak', price: 15, priceFormatted: '15 Coins', currency: 'Coins', material: 'cooked_beef' },
+        { key: 'golden_apple', name: 'Golden Apple', price: 800, priceFormatted: '800 Coins', currency: 'Coins', material: 'golden_apple' },
+        { key: 'pumpkin_pie', name: 'Pumpkin Pie', price: 22, priceFormatted: '22 Coins', currency: 'Coins', material: 'pumpkin_pie' },
+        { key: 'mushroom_stew', name: 'Mushroom Stew', price: 18, priceFormatted: '18 Coins', currency: 'Coins', material: 'mushroom_stew' },
+    ],
+    tools: [
+        { key: 'diamond_sword', name: 'Diamond Sword', price: 1500, priceFormatted: '1,500 Coins', currency: 'Coins', material: 'diamond_sword' },
+        { key: 'diamond_pickaxe', name: 'Diamond Pickaxe', price: 1200, priceFormatted: '1,200 Coins', currency: 'Coins', material: 'diamond_pickaxe' },
+        { key: 'diamond_shovel', name: 'Diamond Shovel', price: 600, priceFormatted: '600 Coins', currency: 'Coins', material: 'diamond_shovel' },
+        { key: 'bow', name: 'Bow', price: 350, priceFormatted: '350 Coins', currency: 'Coins', material: 'bow' },
+        { key: 'crossbow', name: 'Crossbow', price: 500, priceFormatted: '500 Coins', currency: 'Coins', material: 'crossbow' },
+    ],
+    redstone: [
+        { key: 'redstone', name: 'Redstone Dust', price: 25, priceFormatted: '25 Coins', currency: 'Coins', material: 'redstone' },
+        { key: 'repeater', name: 'Repeater', price: 80, priceFormatted: '80 Coins', currency: 'Coins', material: 'repeater' },
+        { key: 'piston', name: 'Piston', price: 120, priceFormatted: '120 Coins', currency: 'Coins', material: 'piston' },
+        { key: 'observer', name: 'Observer', price: 150, priceFormatted: '150 Coins', currency: 'Coins', material: 'observer' },
+        { key: 'hopper', name: 'Hopper', price: 300, priceFormatted: '300 Coins', currency: 'Coins', material: 'hopper' },
+    ],
+    misc: [
+        { key: 'nether_star', name: 'Nether Star', price: 5000, priceFormatted: '5,000 Coins', currency: 'Coins', material: 'nether_star' },
+        { key: 'elytra', name: 'Elytra', price: 25000, priceFormatted: '25,000 Coins', currency: 'Coins', material: 'elytra' },
+        { key: 'totem_of_undying', name: 'Totem of Undying', price: 15000, priceFormatted: '15,000 Coins', currency: 'Coins', material: 'totem_of_undying' },
+        { key: 'enchanted_golden_apple', name: 'Enchanted Golden Apple', price: 50000, priceFormatted: '50,000 Coins', currency: 'Coins', material: 'enchanted_golden_apple' },
+        { key: 'ender_pearl', name: 'Ender Pearl', price: 250, priceFormatted: '250 Coins', currency: 'Coins', material: 'ender_pearl' },
+        { key: 'blaze_rod', name: 'Blaze Rod', price: 180, priceFormatted: '180 Coins', currency: 'Coins', material: 'blaze_rod' },
+    ]
+};
+
+const FAKE_AUCTIONS = [
+    { id: 1, itemName: 'Diamond Sword', material: 'diamond_sword', amount: 1, seller: 'xX_Pro_Xx', sellerUuid: 'fake1', isBin: true, price: 2500, currencySymbol: '$', highestBidder: null, expiration: Date.now() + 3600000 },
+    { id: 2, itemName: 'Netherite Ingot', material: 'netherite_ingot', amount: 3, seller: 'BuilderBob', sellerUuid: 'fake2', isBin: false, price: 1800, currencySymbol: '$', highestBidder: 'MinerMike', expiration: Date.now() + 7200000 },
+    { id: 3, itemName: 'Elytra', material: 'elytra', amount: 1, seller: 'SkyLord', sellerUuid: 'fake3', isBin: true, price: 45000, currencySymbol: '$', highestBidder: null, expiration: Date.now() + 86400000 },
+    { id: 4, itemName: 'Shulker Box', material: 'shulker_box', amount: 2, seller: 'RedstoneRex', sellerUuid: 'fake4', isBin: false, price: 600, currencySymbol: '$', highestBidder: null, expiration: Date.now() + 240000 },
+    { id: 5, itemName: 'Beacon', material: 'beacon', amount: 1, seller: 'RichSteve', sellerUuid: 'fake5', isBin: true, price: 12000, currencySymbol: '$', highestBidder: null, expiration: Date.now() + 14400000 },
+    { id: 6, itemName: 'Enchanted Golden Apple', material: 'enchanted_golden_apple', amount: 1, seller: 'GappleGod', sellerUuid: 'fake6', isBin: false, price: 35000, currencySymbol: '$', highestBidder: 'WhalePlayer', expiration: Date.now() + 1800000 },
+];
+
+const FAKE_ORDERS = [
+    { id: 1, itemName: 'Diamond', material: 'diamond', buyer: 'JewelerJane', buyerUuid: 'fake10', pricePerPiece: 480, currencySymbol: '$', amountRequested: 64, amountFilled: 42, status: 'ACTIVE' },
+    { id: 2, itemName: 'Iron Ingot', material: 'iron_ingot', buyer: 'IronMan99', buyerUuid: 'fake11', pricePerPiece: 55, currencySymbol: '$', amountRequested: 128, amountFilled: 128, status: 'FILLED' },
+    { id: 3, itemName: 'Nether Quartz', material: 'quartz', buyer: 'QuarryQueen', buyerUuid: 'fake12', pricePerPiece: 18, currencySymbol: '$', amountRequested: 256, amountFilled: 89, status: 'ACTIVE' },
+    { id: 4, itemName: 'Gold Ingot', material: 'gold_ingot', buyer: 'GoldGrinder', buyerUuid: 'fake13', pricePerPiece: 115, currencySymbol: '$', amountRequested: 32, amountFilled: 0, status: 'ACTIVE' },
+];
+
+const FAKE_STOCKS = [
+    { key: 'diamond', name: 'Diamond', material: 'diamond', buyPrice: 500, sellPrice: 420, change: 5.2, currencySymbol: '$' },
+    { key: 'iron_ingot', name: 'Iron Ingot', material: 'iron_ingot', buyPrice: 50, sellPrice: 42, change: -2.1, currencySymbol: '$' },
+    { key: 'gold_ingot', name: 'Gold Ingot', material: 'gold_ingot', buyPrice: 120, sellPrice: 98, change: 1.8, currencySymbol: '$' },
+    { key: 'emerald', name: 'Emerald', material: 'emerald', buyPrice: 450, sellPrice: 380, change: -4.3, currencySymbol: '$' },
+    { key: 'coal', name: 'Coal', material: 'coal', buyPrice: 15, sellPrice: 10, change: 0.2, currencySymbol: '$' },
+    { key: 'redstone', name: 'Redstone Dust', material: 'redstone', buyPrice: 25, sellPrice: 18, change: 3.7, currencySymbol: '$' },
+    { key: 'lapis_lazuli', name: 'Lapis Lazuli', material: 'lapis_lazuli', buyPrice: 35, sellPrice: 28, change: -1.5, currencySymbol: '$' },
+    { key: 'netherite_ingot', name: 'Netherite Ingot', material: 'netherite_ingot', buyPrice: 8000, sellPrice: 6500, change: 8.9, currencySymbol: '$' },
+    { key: 'ender_pearl', name: 'Ender Pearl', material: 'ender_pearl', buyPrice: 250, sellPrice: 200, change: -0.8, currencySymbol: '$' },
+    { key: 'blaze_rod', name: 'Blaze Rod', material: 'blaze_rod', buyPrice: 180, sellPrice: 140, change: 2.4, currencySymbol: '$' },
+    { key: 'quartz', name: 'Nether Quartz', material: 'quartz', buyPrice: 20, sellPrice: 14, change: 0.0, currencySymbol: '$' },
+    { key: 'glowstone', name: 'Glowstone', material: 'glowstone', buyPrice: 12, sellPrice: 8, change: -0.5, currencySymbol: '$' },
+];
+
+let currentPage = 'market';
+let currentCategory = 'building';
+
+// ── Navigation ─────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupNavigation();
+    renderCategories(FAKE_CATEGORIES);
+    selectCategory('building', 'Building Blocks');
+});
+
+function setupNavigation() {
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => switchPage(tab.dataset.page));
+    });
+}
+
+function switchPage(page) {
+    currentPage = page;
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.nav-tab[data-page="${page}"]`).classList.add('active');
+    document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+    document.getElementById(`page-${page}`).classList.remove('hidden');
+
+    switch (page) {
+        case 'market': break;
+        case 'auction': renderAuctions(FAKE_AUCTIONS); break;
+        case 'orders': renderOrders(FAKE_ORDERS); break;
+        case 'stocks': renderStocks(FAKE_STOCKS); break;
+    }
+}
+
+// ── Market Page ────────────────────────────────────────────────
+
+function renderCategories(cats) {
+    const container = document.getElementById('sidebar-categories');
+    container.innerHTML = '';
+    cats.forEach(cat => {
+        const el = document.createElement('div');
+        el.className = 'sidebar-item';
+        el.dataset.catId = cat.id;
+        el.innerHTML = `
+            <img src="${IMG_BASE}${cat.icon?.toLowerCase() || 'stone'}" width="20" height="20"
+                 style="image-rendering:pixelated" onerror="this.style.display='none'">
+            <span>${esc(cat.name)}</span>
+            <span class="item-count">${cat.itemCount}</span>
+        `;
+        el.addEventListener('click', () => selectCategory(cat.id, cat.name));
+        container.appendChild(el);
+    });
+}
+
+function selectCategory(catId, catName) {
+    currentCategory = catId;
+    document.querySelectorAll('.sidebar-item').forEach(s => {
+        s.classList.toggle('active', s.dataset.catId === catId);
+    });
+    updateBreadcrumb(catName);
+    const items = FAKE_ITEMS[catId] || [];
+    renderItems(items);
+}
+
+function renderItems(items) {
+    const grid = document.getElementById('items-grid');
+    const empty = document.getElementById('empty-state');
+    if (!items || items.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = '';
+        return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = items.map(item => `
+        <div class="item-card" onclick="openBuyModal('${escJs(item.key)}','${escJs(item.name)}',${item.price},'${escJs(item.priceFormatted)}','${escJs(item.currency)}','${escJs(item.material)}')">
+            <div class="item-card-header">
+                <div class="item-icon">
+                    <img src="${IMG_BASE}${item.material?.toLowerCase() || 'stone'}"
+                         onerror="handleItemIconError(this, '${escJs(item.material || 'stone')}')" alt="">
+                </div>
+                <div class="item-name">${esc(item.name)}</div>
+            </div>
+            <div class="item-card-footer">
+                <span class="item-price">${item.priceFormatted}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateBreadcrumb(name) {
+    document.getElementById('breadcrumb').innerHTML = `<span class="breadcrumb-item active">${esc(name)}</span>`;
+}
+
+// ── Buy Modal ──────────────────────────────────────────────────
+
+let modalItem = {};
+
+function openBuyModal(key, name, price, formatted, currency, material) {
+    modalItem = { key, name, price, formatted, currency, material };
+    document.getElementById('modal-item-name').textContent = name;
+    document.getElementById('modal-item-price').textContent = formatted;
+    document.getElementById('modal-icon').innerHTML =
+        `<img src="${IMG_BASE}${material?.toLowerCase() || 'stone'}" width="36" height="36" style="image-rendering:pixelated"
+              onerror="handleItemIconError(this, '${escJs(material || 'stone')}')">`;
+    document.getElementById('amount-input').value = 1;
+    updateModalTotal();
+    document.getElementById('buy-modal').style.display = '';
+}
+
+function updateModalTotal() {
+    const amt = parseInt(document.getElementById('amount-input').value) || 1;
+    const total = modalItem.price * amt;
+    document.getElementById('modal-total').textContent =
+        `${total.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${modalItem.currency}`;
+}
+
+document.getElementById('modal-close')?.addEventListener('click', () => {
+    document.getElementById('buy-modal').style.display = 'none';
+});
+document.getElementById('modal-cancel')?.addEventListener('click', () => {
+    document.getElementById('buy-modal').style.display = 'none';
+});
+document.getElementById('amount-minus')?.addEventListener('click', () => {
+    const inp = document.getElementById('amount-input');
+    inp.value = Math.max(1, (parseInt(inp.value) || 1) - 1);
+    updateModalTotal();
+});
+document.getElementById('amount-plus')?.addEventListener('click', () => {
+    const inp = document.getElementById('amount-input');
+    inp.value = Math.min(64, (parseInt(inp.value) || 1) + 1);
+    updateModalTotal();
+});
+document.getElementById('amount-input')?.addEventListener('input', updateModalTotal);
+document.getElementById('modal-buy')?.addEventListener('click', () => {
+    showToast('success', 'Preview mode — purchases disabled');
+    document.getElementById('buy-modal').style.display = 'none';
+});
+
+// ── Auction Page ───────────────────────────────────────────────
+
+function renderAuctions(auctions) {
+    const grid = document.getElementById('auction-grid');
+    const empty = document.getElementById('auction-empty');
+    if (!auctions || auctions.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = '';
+        return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = auctions.map(a => {
+        const remaining = a.expiration - Date.now();
+        const timeStr = remaining > 0 ? formatDuration(remaining) : 'Expired';
+        const isExpiring = remaining > 0 && remaining < 300000;
+        return `
+        <div class="auction-card">
+            <div class="auction-tag ${a.isBin ? 'bin' : 'bid'}">${a.isBin ? 'BIN' : 'BID'}</div>
+            <div class="auction-card-header">
+                <div class="auction-item-icon">
+                    <img src="${IMG_BASE}${a.material?.toLowerCase() || 'stone'}"
+                         onerror="handleItemIconError(this, '${escJs(a.material || 'stone')}')" alt="">
+                </div>
+                <div class="auction-item-info">
+                    <div class="auction-item-name">${esc(a.itemName)}</div>
+                    <div class="auction-item-amount">${a.amount > 1 ? `x${a.amount}` : ''} by ${esc(a.seller)}</div>
+                </div>
+            </div>
+            <div class="auction-details">
+                <div class="auction-detail-row">
+                    <span class="auction-detail-label">${a.isBin ? 'Price' : 'Current Bid'}</span>
+                    <span class="auction-price-value">${a.currencySymbol}${a.price.toLocaleString()}</span>
+                </div>
+                ${a.highestBidder ? `
+                <div class="auction-detail-row">
+                    <span class="auction-detail-label">Top Bidder</span>
+                    <span class="auction-detail-value">${esc(a.highestBidder)}</span>
+                </div>` : ''}
+            </div>
+            <div class="auction-timer ${isExpiring ? 'expiring' : ''}">
+                ${ICONS.CLOCK} ${timeStr}
+            </div>
+            <button class="btn-buy"
+                style="margin: 10px 15px 15px; width: calc(100% - 30px); font-size: 13px; padding: 10px;"
+                onclick="showToast('success', 'Preview mode — auctions disabled')">
+                ${a.isBin ? 'Buy It Now' : 'Place Bid'}
+            </button>
+        </div>`;
+    }).join('');
+}
+
+function formatDuration(ms) {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const h = Math.floor(m / 60);
+    const d = Math.floor(h / 24);
+    if (d > 0) return `${d}d ${h % 24}h`;
+    if (h > 0) return `${h}h ${m % 60}m`;
+    if (m > 0) return `${m}m ${s % 60}s`;
+    return `${s}s`;
+}
+
+// ── Orders Page ────────────────────────────────────────────────
+
+function renderOrders(orders) {
+    const body = document.getElementById('orders-body');
+    const empty = document.getElementById('orders-empty');
+    if (!orders || orders.length === 0) {
+        body.innerHTML = '';
+        empty.style.display = '';
+        document.getElementById('orders-table-wrap').style.display = 'none';
+        return;
+    }
+    empty.style.display = 'none';
+    document.getElementById('orders-table-wrap').style.display = '';
+    body.innerHTML = orders.map(o => {
+        const pct = o.amountRequested > 0 ? Math.round((o.amountFilled / o.amountRequested) * 100) : 0;
+        const statusClass = o.status === 'ACTIVE' ? 'active' : o.status === 'FILLED' ? 'filled' : 'cancelled';
+        const remaining = o.amountRequested - o.amountFilled;
+        return `
+        <tr>
+            <td>
+                <div class="order-item-cell">
+                    <img class="order-item-icon" src="${IMG_BASE}${o.material?.toLowerCase() || 'stone'}"
+                         loading="lazy" onerror="handleItemIconError(this, '${escJs(o.material || 'stone')}', true)" alt="">
+                    <span class="order-item-name">${esc(o.itemName)}</span>
+                </div>
+            </td>
+            <td>${esc(o.buyer)}</td>
+            <td style="color:var(--accent);font-weight:600">${o.currencySymbol}${o.pricePerPiece.toLocaleString()}</td>
+            <td>
+                <div class="order-progress-wrap">
+                    <div class="order-progress-text">${o.amountFilled} / ${o.amountRequested}</div>
+                    <div class="order-progress-bar">
+                        <div class="order-progress-fill" style="width:${pct}%"></div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="order-status ${statusClass}">${o.status}</span>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ── Stocks Page ────────────────────────────────────────────────
+
+function renderStocks(stocks) {
+    const body = document.getElementById('stocks-body');
+    if (!stocks || stocks.length === 0) {
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted)">No price data available</td></tr>';
+        return;
+    }
+    body.innerHTML = stocks.map(s => {
+        const changeClass = s.change > 0.5 ? 'up' : s.change < -0.5 ? 'down' : 'neutral';
+        const changeStr = s.change > 0 ? `+${s.change.toFixed(1)}%` : `${s.change.toFixed(1)}%`;
+        const arrow = s.change > 0.5 ? ICONS.ARROW_UP : s.change < -0.5 ? ICONS.ARROW_DOWN : ICONS.ARROW_FLAT;
+        return `
+        <tr onclick="showToast('success', 'Preview mode — charts disabled')">
+            <td>
+                <div class="stock-item-cell">
+                    <img class="stock-item-icon" src="${IMG_BASE}${s.material?.toLowerCase() || 'stone'}"
+                         loading="lazy" onerror="handleItemIconError(this, '${escJs(s.material || 'stone')}', true)" alt="">
+                    <span>${esc(s.name)}</span>
+                </div>
+            </td>
+            <td style="color:var(--accent);font-weight:600">${s.buyPrice > 0 ? s.currencySymbol + s.buyPrice.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+            <td style="font-weight:500">${s.sellPrice > 0 ? s.currencySymbol + s.sellPrice.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+            <td><span class="stock-change ${changeClass}">${arrow} ${changeStr}</span></td>
+        </tr>`;
+    }).join('');
+}
+
+// ── Utilities ──────────────────────────────────────────────────
+
+function handleItemIconError(img, material, hideOnFail = false) {
+    let attempt = parseInt(img.dataset.fallback || '0');
+    if (attempt < 1) {
+        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/item/${material.toLowerCase()}.png`;
+        img.dataset.fallback = attempt + 1;
+    } else if (attempt < 2) {
+        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/block/${material.toLowerCase()}.png`;
+        img.dataset.fallback = attempt + 1;
+    } else {
+        if (hideOnFail) {
+            img.style.display = 'none';
+        } else {
+            const fallback = document.createElement('div');
+            fallback.innerHTML = ICONS.BOX.trim();
+            img.replaceWith(fallback.firstElementChild || fallback);
+        }
+    }
+}
+
+function showToast(type, msg) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+function esc(str) {
+    return String(str)
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
+        .replace(/"/g, '"')
+        .replace(/'/g, '&#39;')
+        .replace(/`/g, '&#96;');
+}
+
+function escJs(str) {
+    return String(str)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/`/g, '\\`')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r');
+}
+
+// Search functionality
+document.getElementById('search-input')?.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    if (q.length >= 2) {
+        const allItems = Object.values(FAKE_ITEMS).flat();
+        const filtered = allItems.filter(i => i.name.toLowerCase().includes(q));
+        renderItems(filtered);
+        updateBreadcrumb(`Search: "${q}"`);
+        document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+    } else if (q.length === 0) {
+        selectCategory(currentCategory, document.querySelector('.sidebar-item.active span')?.textContent || 'All');
+    }
+});
+
+document.getElementById('auction-search')?.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    const filtered = FAKE_AUCTIONS.filter(a => a.itemName.toLowerCase().includes(q) || a.seller.toLowerCase().includes(q));
+    renderAuctions(filtered);
+});
+
+document.getElementById('stocks-search')?.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    const filtered = FAKE_STOCKS.filter(s => s.name.toLowerCase().includes(q));
+    renderStocks(filtered);
+});
