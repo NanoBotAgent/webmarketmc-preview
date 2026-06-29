@@ -460,9 +460,15 @@ function handleItemIconError(img, material, hideOnFail = false) {
         img.src = `https://assets.mcasset.cloud/26.2/assets/minecraft/textures/block/${material.toLowerCase()}.png`;
         img.dataset.fallback = attempt + 1;
     } else if (attempt < 2) {
-        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/item/${material.toLowerCase()}.png`;
+        img.src = `https://assets.mcasset.cloud/26.1/assets/minecraft/textures/item/${material.toLowerCase()}.png`;
         img.dataset.fallback = attempt + 1;
     } else if (attempt < 3) {
+        img.src = `https://assets.mcasset.cloud/26.1/assets/minecraft/textures/block/${material.toLowerCase()}.png`;
+        img.dataset.fallback = attempt + 1;
+    } else if (attempt < 4) {
+        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/item/${material.toLowerCase()}.png`;
+        img.dataset.fallback = attempt + 1;
+    } else if (attempt < 5) {
         img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/block/${material.toLowerCase()}.png`;
         img.dataset.fallback = attempt + 1;
     } else {
