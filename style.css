@@ -253,6 +253,10 @@ header {
     display: none;
 }
 
+.page-content.hidden .sidebar {
+    display: none;
+}
+
 .page-header-bar {
     padding: 24px 32px 16px;
     max-width: 1200px;
