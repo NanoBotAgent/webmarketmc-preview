@@ -12,6 +12,23 @@ function closeModal(overlayId) {
     }, { once: true });
 }
 
+// ── Update +/- button disabled states ──────────────────────────
+function updateQtyButtonStates(inputId, minusId, plusId, maxQty) {
+    const val = parseInt(document.getElementById(inputId)?.value) || 1;
+    const minusBtn = document.getElementById(minusId);
+    const plusBtn = document.getElementById(plusId);
+    if (minusBtn) {
+        if (val <= 1) minusBtn.classList.add('at-limit');
+        else minusBtn.classList.remove('at-limit');
+    }
+    if (plusBtn) {
+        if (val >= maxQty) plusBtn.classList.add('at-limit');
+        else plusBtn.classList.remove('at-limit');
+    }
+}
+
+
+
 
 
 const ICONS = {
@@ -217,16 +234,20 @@ function updateBreadcrumb(name) {
 // ── Buy Modal ──────────────────────────────────────────────────
 
 let modalItem = {};
+let currentBuyContext = null;
 
-function openBuyModal(key, name, price, formatted, currency, material) {
+function openBuyModal(key, name, price, formatted, currency, material, maxQty = 64) {
     modalItem = { key, name, price, formatted, currency, material };
+    currentBuyContext = { maxQty };
     document.getElementById('modal-item-name').textContent = name;
     document.getElementById('modal-item-price').textContent = formatted;
     document.getElementById('modal-icon').innerHTML =
         `<img src="${IMG_BASE}${material?.toLowerCase() || 'stone'}" width="36" height="36" style="image-rendering:pixelated"
               onerror="handleItemIconError(this, '${escJs(material || 'stone')}')">`;
     document.getElementById('amount-input').value = 1;
+    document.getElementById('amount-input').max = maxQty;
     updateModalTotal();
+    updateQtyButtonStates('amount-input', 'amount-minus', 'amount-plus', maxQty);
     document.getElementById('buy-modal').style.display = 'flex';
     document.getElementById('buy-modal').classList.remove('closing');
 }
@@ -248,13 +269,18 @@ document.getElementById('amount-minus')?.addEventListener('click', () => {
     const inp = document.getElementById('amount-input');
     inp.value = Math.max(1, (parseInt(inp.value) || 1) - 1);
     updateModalTotal();
+    updateQtyButtonStates('amount-input', 'amount-minus', 'amount-plus', currentBuyContext?.maxQty || 1);
 });
 document.getElementById('amount-plus')?.addEventListener('click', () => {
     const inp = document.getElementById('amount-input');
-    inp.value = Math.min(64, (parseInt(inp.value) || 1) + 1);
+    inp.value = Math.min(currentBuyContext?.maxQty || 64, (parseInt(inp.value) || 1) + 1);
     updateModalTotal();
+    updateQtyButtonStates('amount-input', 'amount-minus', 'amount-plus', currentBuyContext?.maxQty || 1);
 });
-document.getElementById('amount-input')?.addEventListener('input', updateModalTotal);
+document.getElementById('amount-input')?.addEventListener('input', () => {
+    updateModalTotal();
+    updateQtyButtonStates('amount-input', 'amount-minus', 'amount-plus', currentBuyContext?.maxQty || 1);
+});
 document.getElementById('modal-buy')?.addEventListener('click', () => {
     showToast('success', 'Preview mode - purchases disabled');
     closeModal('buy-modal');
@@ -341,6 +367,7 @@ function openAuctionModal(id, isBin, name, material, price, currencyStr, amount)
     const qtyInput = document.getElementById('auction-qty-input');
     qtyInput.value = 1;
     qtyInput.max = maxQty;
+    updateQtyButtonStates('auction-qty-input', 'auction-qty-minus', 'auction-qty-plus', maxQty);
     const qtySelector = document.getElementById('auction-quantity-selector');
     qtySelector.style.display = maxQty > 1 ? '' : 'none';
 
@@ -384,14 +411,19 @@ document.getElementById('auction-qty-minus')?.addEventListener('click', () => {
     const inp = document.getElementById('auction-qty-input');
     inp.value = Math.max(1, (parseInt(inp.value) || 1) - 1);
     updateAuctionTotal();
+    updateQtyButtonStates('auction-qty-input', 'auction-qty-minus', 'auction-qty-plus', currentAuctionContext?.maxQty || 1);
 });
 document.getElementById('auction-qty-plus')?.addEventListener('click', () => {
     if (!currentAuctionContext) return;
     const inp = document.getElementById('auction-qty-input');
     inp.value = Math.min(currentAuctionContext.maxQty, (parseInt(inp.value) || 1) + 1);
     updateAuctionTotal();
+    updateQtyButtonStates('auction-qty-input', 'auction-qty-minus', 'auction-qty-plus', currentAuctionContext?.maxQty || 1);
 });
-document.getElementById('auction-qty-input')?.addEventListener('input', updateAuctionTotal);
+document.getElementById('auction-qty-input')?.addEventListener('input', () => {
+    updateAuctionTotal();
+    updateQtyButtonStates('auction-qty-input', 'auction-qty-minus', 'auction-qty-plus', currentAuctionContext?.maxQty || 1);
+});
 document.getElementById('auction-amount-input')?.addEventListener('input', updateAuctionTotal);
 
 document.getElementById('auction-modal-submit')?.addEventListener('click', () => {

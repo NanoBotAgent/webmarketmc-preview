@@ -1152,6 +1152,17 @@ header {
     background: var(--bg-card-hover);
 }
 
+.amount-btn:disabled,
+.amount-btn.at-limit {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: var(--bg-elevated);
+}
+
+.amount-btn.at-limit:hover {
+    background: var(--bg-elevated);
+}
+
 .amount-controls input {
     flex: 1;
     text-align: center;
