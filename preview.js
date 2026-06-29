@@ -41,6 +41,19 @@ const ICONS = {
 
 const IMG_BASE = 'https://assets.mcasset.cloud/26.2/assets/minecraft/textures/item/';
 
+// Items whose texture filename differs from their item ID
+const TEXTURE_OVERRIDES = {
+    'enchanted_golden_apple': 'golden_apple',       // same texture, enchant glint is client-side
+    'crossbow': 'crossbow_standby',                  // default crossbow texture
+    'debug_stick': 'stick',                          // debug stick uses stick texture
+    'clock': 'clock_00',                             // animated: use first frame
+    'compass': 'compass_00',                         // animated: use first frame
+    'recovery_compass': 'recovery_compass_00',       // animated: use first frame
+    'shulker_box': 'block/shulker_box',              // block texture, not item
+    'piston': 'block/piston_side',                   // block texture
+    'observer': 'block/observer_front',              // block texture
+};
+
 // ── Fake Data ──────────────────────────────────────────────────
 
 const FAKE_CATEGORIES = [
@@ -183,7 +196,7 @@ function renderCategories(cats) {
         el.className = 'sidebar-item';
         el.dataset.catId = cat.id;
         el.innerHTML = `
-            <img src="${IMG_BASE}${cat.icon?.toLowerCase() || 'stone'}" width="20" height="20"
+            <img src="${getItemIconUrl(cat.icon || 'stone')}" width="20" height="20"
                  style="image-rendering:pixelated" onerror="this.style.display='none'">
             <span>${esc(cat.name)}</span>
             <span class="item-count">${cat.itemCount}</span>
@@ -216,7 +229,7 @@ function renderItems(items) {
         <div class="item-card" onclick="openBuyModal('${escJs(item.key)}','${escJs(item.name)}',${item.price},'${escJs(item.priceFormatted)}','${escJs(item.currency)}','${escJs(item.material)}')">
             <div class="item-card-header">
                 <div class="item-icon">
-                    <img src="${IMG_BASE}${item.material?.toLowerCase() || 'stone'}"
+                    <img src="${getItemIconUrl(item.material || 'stone')}"
                          onerror="handleItemIconError(this, '${escJs(item.material || 'stone')}')" alt="">
                 </div>
                 <div class="item-name">${esc(item.name)}</div>
@@ -243,7 +256,7 @@ function openBuyModal(key, name, price, formatted, currency, material, maxQty = 
     document.getElementById('modal-item-name').textContent = name;
     document.getElementById('modal-item-price').textContent = formatted;
     document.getElementById('modal-icon').innerHTML =
-        `<img src="${IMG_BASE}${material?.toLowerCase() || 'stone'}" width="36" height="36" style="image-rendering:pixelated"
+        `<img src="${getItemIconUrl(material || 'stone')}" width="36" height="36" style="image-rendering:pixelated"
               onerror="handleItemIconError(this, '${escJs(material || 'stone')}')">`;
     document.getElementById('amount-input').value = 1;
     document.getElementById('amount-input').max = maxQty;
@@ -320,7 +333,7 @@ function renderAuctions(auctions, categoryName) {
             <div class="auction-tag ${a.isBin ? 'bin' : 'bid'}">${a.isBin ? 'BIN' : 'BID'}</div>
             <div class="auction-card-header">
                 <div class="auction-item-icon">
-                    <img src="${IMG_BASE}${a.material?.toLowerCase() || 'stone'}"
+                    <img src="${getItemIconUrl(a.material || 'stone')}"
                          onerror="handleItemIconError(this, '${escJs(a.material || 'stone')}')" alt="">
                 </div>
                 <div class="auction-item-info">
@@ -375,7 +388,7 @@ function openAuctionModal(id, isBin, name, material, price, currencyStr, amount)
         : `Current: ${currencyStr}${price.toLocaleString()} each`;
 
     const iconEl = document.getElementById('auction-modal-icon');
-    iconEl.innerHTML = `<img src="${IMG_BASE}${escJs(material)}" onerror="handleItemIconError(this, '${escJs(material)}', true)">`;
+    iconEl.innerHTML = `<img src="${getItemIconUrl(material)}" onerror="handleItemIconError(this, '${escJs(material)}', true)">`;
 
     // Quantity selector - show only if stack > 1
     const qtyInput = document.getElementById('auction-qty-input');
@@ -465,7 +478,7 @@ function renderOrders(orders) {
         <tr>
             <td>
                 <div class="order-item-cell">
-                    <img class="order-item-icon" src="${IMG_BASE}${o.material?.toLowerCase() || 'stone'}"
+                    <img class="order-item-icon" src="${getItemIconUrl(o.material || 'stone')}"
                          loading="lazy" onerror="handleItemIconError(this, '${escJs(o.material || 'stone')}', true)" alt="">
                     <span class="order-item-name">${esc(o.itemName)}</span>
                 </div>
@@ -503,7 +516,7 @@ function renderStocks(stocks) {
         <tr onclick="showToast('success', 'Preview mode - charts disabled')">
             <td>
                 <div class="stock-item-cell">
-                    <img class="stock-item-icon" src="${IMG_BASE}${s.material?.toLowerCase() || 'stone'}"
+                    <img class="stock-item-icon" src="${getItemIconUrl(s.material || 'stone')}"
                          loading="lazy" onerror="handleItemIconError(this, '${escJs(s.material || 'stone')}', true)" alt="">
                     <span>${esc(s.name)}</span>
                 </div>
@@ -517,22 +530,43 @@ function renderStocks(stocks) {
 
 // ── Utilities ──────────────────────────────────────────────────
 
+function resolveTextureName(material) {
+    const key = (material || '').toLowerCase();
+    const override = TEXTURE_OVERRIDES[key];
+    if (override) {
+        // If override starts with "block/", use the block texture path
+        if (override.startsWith('block/')) {
+            return override; // caller must handle block path
+        }
+        return override;
+    }
+    return key;
+}
+
+function getItemIconUrl(material) {
+    const resolved = resolveTextureName(material);
+    if (resolved.startsWith('block/')) {
+        return `https://assets.mcasset.cloud/26.2/assets/minecraft/textures/${resolved}.png`;
+    }
+    return `${IMG_BASE}${resolved}.png`;
+}
+
 function handleItemIconError(img, material, hideOnFail = false) {
     let attempt = parseInt(img.dataset.fallback || '0');
     if (attempt < 1) {
-        img.src = `https://assets.mcasset.cloud/26.2/assets/minecraft/textures/block/${material.toLowerCase()}.png`;
+        img.src = `https://assets.mcasset.cloud/26.2/assets/minecraft/textures/block/${resolveTextureName(material)}.png`;
         img.dataset.fallback = attempt + 1;
     } else if (attempt < 2) {
-        img.src = `https://assets.mcasset.cloud/26.1/assets/minecraft/textures/item/${material.toLowerCase()}.png`;
+        img.src = `https://assets.mcasset.cloud/26.1/assets/minecraft/textures/item/${resolveTextureName(material)}.png`;
         img.dataset.fallback = attempt + 1;
     } else if (attempt < 3) {
-        img.src = `https://assets.mcasset.cloud/26.1/assets/minecraft/textures/block/${material.toLowerCase()}.png`;
+        img.src = `https://assets.mcasset.cloud/26.1/assets/minecraft/textures/block/${resolveTextureName(material)}.png`;
         img.dataset.fallback = attempt + 1;
     } else if (attempt < 4) {
-        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/item/${material.toLowerCase()}.png`;
+        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/item/${resolveTextureName(material)}.png`;
         img.dataset.fallback = attempt + 1;
     } else if (attempt < 5) {
-        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/block/${material.toLowerCase()}.png`;
+        img.src = `https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/block/${resolveTextureName(material)}.png`;
         img.dataset.fallback = attempt + 1;
     } else {
         if (hideOnFail) {
@@ -626,7 +660,7 @@ function renderAuctionCategories(cats) {
         el.className = 'sidebar-item';
         el.dataset.catId = cat.id;
         el.innerHTML = `
-            <img src="${IMG_BASE}${cat.icon?.toLowerCase() || 'stone'}" width="20" height="20"
+            <img src="${getItemIconUrl(cat.icon || 'stone')}" width="20" height="20"
                  style="image-rendering:pixelated" onerror="this.style.display='none'">
             <span>${esc(cat.name)}</span>
             <span class="item-count">${cat.itemCount}</span>
