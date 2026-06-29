@@ -1,6 +1,18 @@
 // ═══════════════════════════════════════════════════════════════
 // WebMarketMC — Static Preview with Fake Data
 // ═══════════════════════════════════════════════════════════════
+// ── Modal close animation helper ──────────────────────────────
+function closeModal(overlayId) {
+    const overlay = document.getElementById(overlayId);
+    if (!overlay) return;
+    overlay.classList.add('closing');
+    overlay.addEventListener('animationend', () => {
+        overlay.style.display = 'none';
+        overlay.classList.remove('closing');
+    }, { once: true });
+}
+
+
 
 const ICONS = {
     BOX: `<svg class="icon" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`,
@@ -215,7 +227,8 @@ function openBuyModal(key, name, price, formatted, currency, material) {
               onerror="handleItemIconError(this, '${escJs(material || 'stone')}')">`;
     document.getElementById('amount-input').value = 1;
     updateModalTotal();
-    document.getElementById('buy-modal').style.display = '';
+    document.getElementById('buy-modal').style.display = 'flex';
+    document.getElementById('buy-modal').classList.remove('closing');
 }
 
 function updateModalTotal() {
@@ -226,10 +239,10 @@ function updateModalTotal() {
 }
 
 document.getElementById('modal-close')?.addEventListener('click', () => {
-    document.getElementById('buy-modal').style.display = 'none';
+    closeModal('buy-modal');
 });
 document.getElementById('modal-cancel')?.addEventListener('click', () => {
-    document.getElementById('buy-modal').style.display = 'none';
+    closeModal('buy-modal');
 });
 document.getElementById('amount-minus')?.addEventListener('click', () => {
     const inp = document.getElementById('amount-input');
@@ -244,7 +257,7 @@ document.getElementById('amount-plus')?.addEventListener('click', () => {
 document.getElementById('amount-input')?.addEventListener('input', updateModalTotal);
 document.getElementById('modal-buy')?.addEventListener('click', () => {
     showToast('success', 'Preview mode - purchases disabled');
-    document.getElementById('buy-modal').style.display = 'none';
+    closeModal('buy-modal');
 });
 
 // ── Auction Page ───────────────────────────────────────────────
@@ -349,6 +362,7 @@ function openAuctionModal(id, isBin, name, material, price, currencyStr, amount)
 
     updateAuctionTotal();
     document.getElementById('auction-modal').style.display = 'flex';
+    document.getElementById('auction-modal').classList.remove('closing');
 }
 
 function updateAuctionTotal() {
@@ -361,10 +375,10 @@ function updateAuctionTotal() {
 }
 
 document.getElementById('auction-modal-close')?.addEventListener('click', () => {
-    document.getElementById('auction-modal').style.display = 'none';
+    closeModal('auction-modal');
 });
 document.getElementById('auction-modal-cancel')?.addEventListener('click', () => {
-    document.getElementById('auction-modal').style.display = 'none';
+    closeModal('auction-modal');
 });
 document.getElementById('auction-qty-minus')?.addEventListener('click', () => {
     const inp = document.getElementById('auction-qty-input');
@@ -382,7 +396,7 @@ document.getElementById('auction-amount-input')?.addEventListener('input', updat
 
 document.getElementById('auction-modal-submit')?.addEventListener('click', () => {
     showToast('success', 'Preview mode - auctions disabled');
-    document.getElementById('auction-modal').style.display = 'none';
+    closeModal('auction-modal');
 });
 
 // ── Orders Page ────────────────────────────────────────────────
@@ -538,4 +552,12 @@ document.getElementById('stocks-search')?.addEventListener('input', function() {
     const q = this.value.toLowerCase();
     const filtered = FAKE_STOCKS.filter(s => s.name.toLowerCase().includes(q));
     renderStocks(filtered);
+});
+
+// Click overlay backdrop to close
+document.getElementById('buy-modal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal('buy-modal');
+});
+document.getElementById('auction-modal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal('auction-modal');
 });

@@ -981,7 +981,11 @@ header {
     align-items: center;
     justify-content: center;
     z-index: 200;
-    animation: fadeIn 0.2s ease;
+    animation: fadeIn 0.2s ease forwards;
+}
+
+.modal-overlay.closing {
+    animation: fadeOut 0.2s ease forwards;
 }
 
 @keyframes fadeIn {
@@ -994,6 +998,16 @@ header {
     }
 }
 
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
 .modal {
     background: var(--bg-dark);
     border: 1px solid var(--border);
@@ -1001,7 +1015,11 @@ header {
     width: 100%;
     max-width: 420px;
     box-shadow: var(--shadow-lg);
-    animation: modalSlide 0.25s ease;
+    animation: modalSlide 0.25s ease forwards;
+}
+
+.modal-overlay.closing .modal {
+    animation: modalSlideOut 0.2s ease forwards;
 }
 
 @keyframes modalSlide {
@@ -1013,6 +1031,18 @@ header {
     to {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+@keyframes modalSlideOut {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(20px);
+        opacity: 0;
     }
 }
 
